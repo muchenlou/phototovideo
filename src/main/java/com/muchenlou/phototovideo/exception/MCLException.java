@@ -6,11 +6,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+
 
 /**
  * @Author Baojian Hong
@@ -19,18 +23,39 @@ import java.util.Map;
  */
 
 @Slf4j
-@RestControllerAdvice(basePackages = "com.muchenlou.phototovideo.controller")
+@ControllerAdvice
 public class MCLException {
-    @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public JsonData handleVaildException(MethodArgumentNotValidException e) {
-        BindingResult bindingResult = e.getBindingResult();
+    @ExceptionHandler(value = MCLCodeException.class)
+    @ResponseBody
+    public JsonData bizExceptionHandler(HttpServletRequest req, MCLCodeException e){
+        log.error("发生业务异常！原因是：{}",e.getMessage());
+        return JsonData.buildError(e.getCode(),e.getMessage());
+    }
 
-        Map<String,String> errorMap = new HashMap<>();
+    /**
+     * 处理空指针的异常
+     * @param req
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(value =NullPointerException.class)
+    @ResponseBody
+    public JsonData exceptionHandler(HttpServletRequest req, NullPointerException e){
+        log.error("发生空指针异常！原因是:",e);
+        return JsonData.buildError(e.getMessage());
+    }
 
-        for (FieldError f:bindingResult.getFieldErrors()) {
-            errorMap.put(f.getField(),f.getDefaultMessage());
-        }
-        log.error("数据出现错误{}", JSON.toJSONString(errorMap));
-        return JsonData.buildError(400, bindingResult.getFieldErrors().get(0).getDefaultMessage());
+
+    /**
+     * 处理其他异常
+     * @param req
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(value =Exception.class)
+    @ResponseBody
+    public JsonData exceptionHandler(HttpServletRequest req, Exception e){
+        log.error("未知异常！原因是:",e);
+        return JsonData.buildError(500,e.getMessage());
     }
 }

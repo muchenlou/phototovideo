@@ -77,38 +77,13 @@ public class VideoDetailsServiceImpl implements VideoDetailsService {
         videoDetailsDO.setCreateTime(new Date());
         videoDetailsMapper.insert(videoDetailsDO);
         // 启动异步加载
-        aiModelsAsync.submitTaskByUrl(videoDetailsDO.getUuid(),imageUrl,modelsId,modelsPrintsDO);
-        System.out.println("看看谁先");
+        aiModelsAsync.submitTaskByUrl(videoDetailsDO.getUuid(),imageUrl,modelsPrintsDO);
         return videoDetailsDO.getUuid();
     }
 
     @Override
-    public void modelHandling(ModelHandlingRequest modelHandlingRequest) {
-        VideoDetailsDO videoDetailsDO = new VideoDetailsDO();
-        if (modelHandlingRequest.getStatus() == 2){
-            videoDetailsDO.setStatus(2);
-        }else{
-            videoDetailsDO.setStatus(1);
-            videoDetailsDO.setVideoUrl(modelHandlingRequest.getVideoUrl());
-            videoDetailsDO.setVideoName(modelHandlingRequest.getVideoName());
-        }
-        videoDetailsMapper.update(videoDetailsDO,new UpdateWrapper<VideoDetailsDO>().eq("uuid",modelHandlingRequest.getJobId()));
-        EventData eventData = new EventData();
-        eventData.setStatus(modelHandlingRequest.getStatus());
-        eventData.setResultUrl(modelHandlingRequest.getVideoUrl());
-        eventData.setTaskId(modelHandlingRequest.getJobId());
-
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("eventName","EVENT_FACE_DRIVEN_TASK_FINISHED");
-        jsonObject.put("eventData",eventData);
-        String entity = JSONObject.toJSONString(jsonObject);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        HttpEntity<String> request = new HttpEntity<>(entity,headers);
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.exchange(modelUrl, HttpMethod.POST, request, String.class);
-        log.error("请求成功");
+    public void modelHandling(EventData eventData) {
+        log.error(JSONObject.toJSON(eventData));
     }
 
     @Override

@@ -45,5 +45,9 @@ public class ModelsPrintsDO implements Serializable {
      */
     private String code;
 
+    /**
+     * 路径
+     */
+    private String path;
 
 }

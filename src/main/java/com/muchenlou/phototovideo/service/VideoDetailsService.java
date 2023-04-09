@@ -17,7 +17,7 @@ public interface VideoDetailsService {
 
     String submitTaskByUrl(String apiKey, String imageUrl, Integer modelsId);
 
-    void modelHandling(ModelHandlingRequest modelHandlingRequest);
+    void modelHandling(EventData eventData);
 
     EventData getTaskInfo(String apiKey, String taskId);
 }

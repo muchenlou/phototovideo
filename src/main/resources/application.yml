@@ -1,12 +1,15 @@
 server:
   port: 9005
-
 spring:
+  resources:
+    static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,file:E:\vieds\
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://101.33.239.2:3306/phototovideo?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: javase520
+    hikari:
+      max-lifetime: 60000
 
 logging:
   level:
@@ -23,4 +26,10 @@ mybatis-plus:
       logic-not-delete-value: 1
       logic-delete-value: 0
 
-modelUrl:
+# The callback address
+modelUrl: http://127.0.0.1:9005/videoDetails/v1/modelHandling
+
+# Storage path
+resultDir: E:\vieds
+
+localhostApi: http://127.0.0.1:9005/

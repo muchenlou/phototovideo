@@ -2,6 +2,8 @@ package com.muchenlou.phototovideo.controller;
 
 
 import com.muchenlou.phototovideo.request.ModelHandlingRequest;
+import com.muchenlou.phototovideo.request.TestRequest;
+import com.muchenlou.phototovideo.response.EventData;
 import com.muchenlou.phototovideo.service.VideoDetailsService;
 import com.muchenlou.phototovideo.utils.JsonData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,11 +41,11 @@ public class VideoDetailsController {
 
     /**
      * 异步通知
-     * @param modelHandlingRequest
+     * @param eventData
      */
     @PostMapping("/v1/modelHandling")
-    public void modelHandling(@RequestBody ModelHandlingRequest modelHandlingRequest){
-        videoDetailsService.modelHandling(modelHandlingRequest);
+    public void modelHandling(@RequestBody TestRequest eventData){
+        videoDetailsService.modelHandling(eventData.getEventData());
     }
 
     /**
@@ -53,7 +55,7 @@ public class VideoDetailsController {
      * @return
      */
     @GetMapping("/v1/getTaskInfo")
-    public JsonData getTaskInfo(@RequestParam("modelsId") String taskId, HttpServletRequest request){
+    public JsonData getTaskInfo(@RequestParam("taskId") String taskId, HttpServletRequest request){
         String apiKey = request.getHeader("APIKEY");
         return JsonData.buildSuccess(videoDetailsService.getTaskInfo(apiKey,taskId));
     }

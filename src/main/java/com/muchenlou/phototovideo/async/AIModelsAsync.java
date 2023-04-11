@@ -39,8 +39,12 @@ public class AIModelsAsync {
     @Value("${modelUrl}")
     private String modelUrl;
 
+
+    @Value("${generateVideoUrl}")
+    private String generateVideoUrl;
+
     // 创建一个信号量，限制同时处理的请求数量为5
-    private static final Semaphore semaphore = new Semaphore(5);
+    private static final Semaphore semaphore = new Semaphore(1);
 
     @Autowired
     private VideoDetailsMapper videoDetailsMapper;
@@ -54,6 +58,7 @@ public class AIModelsAsync {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("driven_audio", modelsPrintsDO.getPath());
             jsonObject.put("source_image", imageUrl);
+            jsonObject.put("enhancer", "gfpgan");
             jsonObject.put("result_dir", resultDir);
             jsonObject.put("uuid", uuid);
             String entity = JSONObject.toJSONString(jsonObject);
@@ -62,7 +67,7 @@ public class AIModelsAsync {
             headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
             HttpEntity<String> request = new HttpEntity<>(entity, headers);
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> response = restTemplate.exchange("http://127.0.0.1:5000/generate_video", HttpMethod.POST, request, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(generateVideoUrl, HttpMethod.POST, request, String.class);
             if (response.getStatusCode().value() != 200){
                 videoDetailsDO.setStatus(2);
                 videoDetailsMapper.update(videoDetailsDO,new UpdateWrapper<VideoDetailsDO>().eq("uuid",uuid));
@@ -71,8 +76,8 @@ public class AIModelsAsync {
             }else{
                 videoDetailsDO.setStatus(1);
                 JSONObject body = JSONObject.parseObject(response.getBody());
-                String[] parts  = body.get("video_url").toString().split("\\\\");
-                String url = localhostApi+parts[2]+"/"+parts[3];
+                String[] parts  = body.get("video_url").toString().split("/");
+                String url = localhostApi+parts[parts.length-2]+"/"+parts[parts.length-1];
                 videoDetailsDO.setVideoUrl(url);
                 videoDetailsDO.setVideoCreateTime(new Date());
                 videoDetailsMapper.update(videoDetailsDO,new UpdateWrapper<VideoDetailsDO>().eq("uuid",uuid));
